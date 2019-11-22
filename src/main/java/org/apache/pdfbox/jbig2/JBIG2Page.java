@@ -24,6 +24,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import javax.imageio.IIOException;
+
 import org.apache.pdfbox.jbig2.err.IntegerMaxValueException;
 import org.apache.pdfbox.jbig2.err.InvalidHeaderValueException;
 import org.apache.pdfbox.jbig2.err.JBIG2Exception;
@@ -32,17 +34,12 @@ import org.apache.pdfbox.jbig2.segments.EndOfStripe;
 import org.apache.pdfbox.jbig2.segments.PageInformation;
 import org.apache.pdfbox.jbig2.segments.RegionSegmentInformation;
 import org.apache.pdfbox.jbig2.util.CombinationOperator;
-import org.apache.pdfbox.jbig2.util.log.Logger;
-import org.apache.pdfbox.jbig2.util.log.LoggerFactory;
 
 /**
  * This class represents a JBIG2 page.
  */
 class JBIG2Page
 {
-
-    private static final Logger log = LoggerFactory.getLogger(JBIG2Page.class);
-
     /**
      * This list contains all segments of this page, sorted by segment number in ascending order.
      */
@@ -69,12 +66,14 @@ class JBIG2Page
 
     /**
      * This method searches for a segment specified by its number.
-     * 
+     *
      * @param number - Segment number of the segment to search.
-     * 
+     *
      * @return The retrieved {@link SegmentHeader} or {@code null} if not available.
+     * @throws IIOException
      */
     public SegmentHeader getSegment(int number)
+        throws IIOException
     {
         SegmentHeader s = segments.get(number);
 
@@ -83,18 +82,16 @@ class JBIG2Page
             return s;
         }
 
-        if (null != document)
-        {
+        if (null != document) {
             return document.getGlobalSegment(number);
         }
 
-        log.info("Segment not found, returning null.");
         return null;
     }
 
     /**
      * Returns the associated page information segment.
-     * 
+     *
      * @return The associated {@link PageInformation} segment or {@code null} if not available.
      */
     protected SegmentHeader getPageInformationSegment()
@@ -107,35 +104,22 @@ class JBIG2Page
             }
         }
 
-        log.info("Page information segment not found.");
         return null;
     }
 
     /**
      * This method returns the decoded bitmap if present. Otherwise the page bitmap will be composed before returning
      * the result.
-     * 
+     *
      * @return pageBitmap - The result of decoding a page
      * @throws JBIG2Exception
      * @throws IOException
      */
     protected Bitmap getBitmap() throws JBIG2Exception, IOException
     {
-        long timestamp;
-
-        if (JBIG2ImageReader.PERFORMANCE_TEST)
-        {
-            timestamp = System.currentTimeMillis();
-        }
-
         if (null == pageBitmap)
         {
             composePageBitmap();
-        }
-
-        if (JBIG2ImageReader.PERFORMANCE_TEST)
-        {
-            log.info("PAGE DECODING: " + (System.currentTimeMillis() - timestamp) + " ms");
         }
 
         return pageBitmap;
@@ -143,7 +127,7 @@ class JBIG2Page
 
     /**
      * This method composes the segments' bitmaps to a page and stores the page as a {@link Bitmap}
-     * 
+     *
      * @throws IOException
      * @throws JBIG2Exception
      */
@@ -225,7 +209,7 @@ class JBIG2Page
      * Check if we have only one region that forms the complete page. If the dimension equals the page's dimension set
      * the region's bitmap as the page's bitmap. Otherwise we have to blit the smaller region's bitmap into the page's
      * bitmap (see Issue 6).
-     * 
+     *
      * @param pageInformation
      * @param regionBitmap
      * @return
@@ -297,7 +281,7 @@ class JBIG2Page
     /**
      * This method counts the regions segments. If there is only one region, the bitmap of this segment is equal to the
      * page bitmap and blitting is not necessary.
-     * 
+     *
      * @return Amount of regions.
      */
     private int countRegions()
@@ -325,7 +309,7 @@ class JBIG2Page
 
     /**
      * This method checks and sets, which combination operator shall be used.
-     * 
+     *
      * @param pi - <code>PageInformation</code> object
      * @param newOperator - The combination operator, specified by actual segment
      * @return the new combination operator
@@ -345,7 +329,7 @@ class JBIG2Page
 
     /**
      * Adds a {@link SegmentHeader} into the page's segments map.
-     * 
+     *
      * @param segment - The segment to be added.
      */
     protected void add(SegmentHeader segment)
@@ -378,7 +362,7 @@ class JBIG2Page
 
     /**
      * Returns the final height of the page.
-     * 
+     *
      * @return The final height of the page.
      * @throws IOException
      * @throws JBIG2Exception

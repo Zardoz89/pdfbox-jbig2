@@ -24,19 +24,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import javax.imageio.IIOException;
 import javax.imageio.stream.ImageInputStream;
 
 import org.apache.pdfbox.jbig2.io.SubInputStream;
-import org.apache.pdfbox.jbig2.util.log.Logger;
-import org.apache.pdfbox.jbig2.util.log.LoggerFactory;
 
 /**
  * This class represents the document structure with its pages and global segments.
  */
 class JBIG2Document
 {
-    private static final Logger log = LoggerFactory.getLogger(JBIG2Document.class);
-
     /** ID string in file header, see ISO/IEC 14492:2001, D.4.1 */
     private int[] FILE_HEADER_ID = { 0x97, 0x4A, 0x42, 0x32, 0x0D, 0x0A, 0x1A, 0x0A };
 
@@ -119,30 +116,27 @@ class JBIG2Document
 
     /**
      * Retrieves the segment with the given segment number considering only segments that aren't associated with a page.
-     * 
+     *
      * @param segmentNr - The number of the wanted segment.
      * @return The requested {@link SegmentHeader}.
+     * @throws IIOException
      */
     SegmentHeader getGlobalSegment(int segmentNr)
+        throws IIOException
     {
-        if (null != globalSegments)
-        {
-            return globalSegments.getSegment(segmentNr);
-        }
+        if (null == globalSegments) {
 
-        if (log.isErrorEnabled())
-        {
-            log.error("Segment not found. Returning null.");
+            // Segment not found. Returning null.
+            return null;
         }
-
-        return null;
+        return globalSegments.getSegment(segmentNr);
     }
 
     /**
      * Retrieves a {@link JBIG2Page} specified by the given page number.
-     * 
+     *
      * @param pageNumber - The page number of the wanted {@link JBIG2Page}.
-     * 
+     *
      * @return The requested {@link JBIG2Page}.
      */
     protected JBIG2Page getPage(int pageNumber)
@@ -153,7 +147,7 @@ class JBIG2Document
     /**
      * Retrieves the amount of pages in this JBIG2 document. If the pages are striped, the document will be completely
      * parsed and the amount of pages will be gathered.
-     * 
+     *
      * @return The amount of pages in this JBIG2 document.
      * @throws IOException
      */
@@ -228,14 +222,6 @@ class JBIG2Document
             }
             segments.add(segment);
 
-            if (JBIG2ImageReader.DEBUG)
-            {
-                if (log.isDebugEnabled())
-                {
-                    log.debug(segment.toString());
-                }
-            }
-
             offset = subInputStream.getStreamPosition();
 
             // Sequential organization skips data part and sets the offset
@@ -271,7 +257,7 @@ class JBIG2Document
 
     /**
      * Determines the start of the data parts and sets the offset.
-     * 
+     *
      * @param segments
      * @param offset
      */
@@ -289,7 +275,7 @@ class JBIG2Document
 
     /**
      * This method reads the stream and sets variables for information about organization type and length etc.
-     * 
+     *
      * @return
      * @throws IOException
      */
@@ -337,7 +323,7 @@ class JBIG2Document
 
     /**
      * This method checks, if the stream is at its end to avoid {@link EOFException}s and reads 32 bits.
-     * 
+     *
      * @param offset
      * @return
      * <li>{@code true} if end of stream reached

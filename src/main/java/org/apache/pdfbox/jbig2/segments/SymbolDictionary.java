@@ -23,7 +23,6 @@ import java.util.ArrayList;
 
 import org.apache.pdfbox.jbig2.Bitmap;
 import org.apache.pdfbox.jbig2.Dictionary;
-import org.apache.pdfbox.jbig2.JBIG2ImageReader;
 import org.apache.pdfbox.jbig2.Region;
 import org.apache.pdfbox.jbig2.SegmentHeader;
 import org.apache.pdfbox.jbig2.decoder.arithmetic.ArithmeticDecoder;
@@ -36,8 +35,6 @@ import org.apache.pdfbox.jbig2.err.IntegerMaxValueException;
 import org.apache.pdfbox.jbig2.err.InvalidHeaderValueException;
 import org.apache.pdfbox.jbig2.image.Bitmaps;
 import org.apache.pdfbox.jbig2.io.SubInputStream;
-import org.apache.pdfbox.jbig2.util.log.Logger;
-import org.apache.pdfbox.jbig2.util.log.LoggerFactory;
 
 /**
  * This class represents the data of segment type "Symbol dictionary". Parsing is described in 7.4.2.1.1 - 7.4.1.1.5 and
@@ -45,8 +42,6 @@ import org.apache.pdfbox.jbig2.util.log.LoggerFactory;
  */
 public class SymbolDictionary implements Dictionary
 {
-
-    private final Logger log = LoggerFactory.getLogger(SymbolDictionary.class);
 
     private SubInputStream subInputStream;
 
@@ -292,37 +287,21 @@ public class SymbolDictionary implements Dictionary
 
     private void checkInput() throws InvalidHeaderValueException
     {
-        if (sdHuffDecodeHeightSelection == 2)
-        {
-            log.info("sdHuffDecodeHeightSelection = " + sdHuffDecodeHeightSelection
-                    + " (value not permitted)");
-        }
-
-        if (sdHuffDecodeWidthSelection == 2)
-        {
-            log.info("sdHuffDecodeWidthSelection = " + sdHuffDecodeWidthSelection
-                    + " (value not permitted)");
-        }
-
         if (isHuffmanEncoded)
         {
             if (sdTemplate != 0)
             {
-                log.info("sdTemplate = " + sdTemplate + " (should be 0)");
                 sdTemplate = 0;
             }
             if (!useRefinementAggregation)
             {
                 if (isCodingContextRetained)
                 {
-                    log.info("isCodingContextRetained = " + isCodingContextRetained
-                            + " (should be 0)");
                     isCodingContextRetained = false;
                 }
 
                 if (isCodingContextUsed)
                 {
-                    log.info("isCodingContextUsed = " + isCodingContextUsed + " (should be 0)");
                     isCodingContextUsed = false;
                 }
             }
@@ -332,17 +311,14 @@ public class SymbolDictionary implements Dictionary
         {
             if (sdHuffBMSizeSelection != 0)
             {
-                log.info("sdHuffBMSizeSelection should be 0");
                 sdHuffBMSizeSelection = 0;
             }
             if (sdHuffDecodeWidthSelection != 0)
             {
-                log.info("sdHuffDecodeWidthSelection should be 0");
                 sdHuffDecodeWidthSelection = 0;
             }
             if (sdHuffDecodeHeightSelection != 0)
             {
-                log.info("sdHuffDecodeHeightSelection should be 0");
                 sdHuffDecodeHeightSelection = 0;
             }
         }
@@ -351,7 +327,6 @@ public class SymbolDictionary implements Dictionary
         {
             if (sdrTemplate != 0)
             {
-                log.info("sdrTemplate = " + sdrTemplate + " (should be 0)");
                 sdrTemplate = 0;
             }
         }
@@ -360,8 +335,6 @@ public class SymbolDictionary implements Dictionary
         {
             if (sdHuffAggInstanceSelection != 0)
             {
-                log.info("sdHuffAggInstanceSelection = " + sdHuffAggInstanceSelection
-                        + " (should be 0)");
                 sdHuffAggInstanceSelection = 0;
             }
         }
@@ -372,10 +345,10 @@ public class SymbolDictionary implements Dictionary
      * 
      * @return List of decoded symbol bitmaps as an <code>ArrayList</code>
      */
+    @Override
     public ArrayList<Bitmap> getDictionary()
             throws IOException, IntegerMaxValueException, InvalidHeaderValueException
     {
-        long timestamp = System.currentTimeMillis();
         if (null == exportSymbols)
         {
 
@@ -493,9 +466,6 @@ public class SymbolDictionary implements Dictionary
             setExportedSymbols(exFlags);
         }
 
-        if (JBIG2ImageReader.PERFORMANCE_TEST)
-            log.info("SYMBOL DECODING: " + (System.currentTimeMillis() - timestamp) + " ms");
-
         // DictionaryViewer.viewSymbols(sdExSyms);
 
         return exportSymbols;
@@ -583,8 +553,6 @@ public class SymbolDictionary implements Dictionary
         final long amountOfRefinementAggregationInstances;
         if (isHuffmanEncoded)
         {
-            log.info(
-                    "Refinement or aggregate-coded symbols may couse problems with huffman decoding!");
             amountOfRefinementAggregationInstances = huffDecodeRefAggNInst();
         }
         else
@@ -1028,6 +996,7 @@ public class SymbolDictionary implements Dictionary
         return null;
     }
 
+    @Override
     public void init(final SegmentHeader header, final SubInputStream sis)
             throws InvalidHeaderValueException, IntegerMaxValueException, IOException
     {

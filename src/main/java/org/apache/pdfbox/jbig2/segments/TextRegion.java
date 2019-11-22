@@ -23,7 +23,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.pdfbox.jbig2.Bitmap;
-import org.apache.pdfbox.jbig2.JBIG2ImageReader;
 import org.apache.pdfbox.jbig2.Region;
 import org.apache.pdfbox.jbig2.SegmentHeader;
 import org.apache.pdfbox.jbig2.decoder.arithmetic.ArithmeticDecoder;
@@ -39,16 +38,12 @@ import org.apache.pdfbox.jbig2.err.InvalidHeaderValueException;
 import org.apache.pdfbox.jbig2.image.Bitmaps;
 import org.apache.pdfbox.jbig2.io.SubInputStream;
 import org.apache.pdfbox.jbig2.util.CombinationOperator;
-import org.apache.pdfbox.jbig2.util.log.Logger;
-import org.apache.pdfbox.jbig2.util.log.LoggerFactory;
 
 /**
  * This class represented the segment type "Text region", 7.4.3, page 56.
  */
 public class TextRegion implements Region
 {
-
-    private final Logger log = LoggerFactory.getLogger(TextRegion.class);
 
     private SubInputStream subInputStream;
 
@@ -259,8 +254,6 @@ public class TextRegion implements Region
         long pixels = (long) regionInfo.getBitmapWidth() * (long) regionInfo.getBitmapHeight();
         if (pixels < amountOfSymbolInstances)
         {
-            log.warn("Limiting number of decoded symbol instances to one per pixel (" + pixels
-                    + " instead of " + amountOfSymbolInstances + ")");
             amountOfSymbolInstances = pixels;
         }
     }
@@ -293,7 +286,6 @@ public class TextRegion implements Region
         {
             if (sbrTemplate != 0)
             {
-                log.info("sbrTemplate should be 0");
                 sbrTemplate = 0;
             }
         }
@@ -309,32 +301,28 @@ public class TextRegion implements Region
         {
             if (sbHuffRSize != 0)
             {
-                log.info("sbHuffRSize should be 0");
                 sbHuffRSize = 0;
             }
             if (sbHuffRDY != 0)
             {
-                log.info("sbHuffRDY should be 0");
                 sbHuffRDY = 0;
             }
             if (sbHuffRDX != 0)
             {
-                log.info("sbHuffRDX should be 0");
                 sbHuffRDX = 0;
             }
             if (sbHuffRDWidth != 0)
             {
-                log.info("sbHuffRDWidth should be 0");
                 sbHuffRDWidth = 0;
             }
             if (sbHuffRDHeight != 0)
             {
-                log.info("sbHuffRDHeight should be 0");
                 sbHuffRDHeight = 0;
             }
         }
     }
 
+    @Override
     public Bitmap getRegionBitmap()
             throws IOException, IntegerMaxValueException, InvalidHeaderValueException
     {
@@ -1055,9 +1043,6 @@ public class TextRegion implements Region
             }
         }
 
-        if (JBIG2ImageReader.DEBUG)
-            log.debug(HuffmanTable.codeTableToString(runCodeTable));
-
         HuffmanTable ht = new FixedSizeTable(runCodeTable);
 
         /* 3) - 5) */
@@ -1119,6 +1104,7 @@ public class TextRegion implements Region
 
     }
 
+    @Override
     public void init(SegmentHeader header, SubInputStream sis)
             throws InvalidHeaderValueException, IntegerMaxValueException, IOException
     {
@@ -1193,6 +1179,7 @@ public class TextRegion implements Region
         this.symbolCodeLength = sbSymCodeLen;
     }
 
+    @Override
     public RegionSegmentInformation getRegionInfo()
     {
         return regionInfo;

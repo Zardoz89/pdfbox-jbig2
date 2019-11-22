@@ -27,8 +27,6 @@ import org.apache.pdfbox.jbig2.decoder.arithmetic.CX;
 import org.apache.pdfbox.jbig2.decoder.mmr.MMRDecompressor;
 import org.apache.pdfbox.jbig2.err.InvalidHeaderValueException;
 import org.apache.pdfbox.jbig2.io.SubInputStream;
-import org.apache.pdfbox.jbig2.util.log.Logger;
-import org.apache.pdfbox.jbig2.util.log.LoggerFactory;
 
 /**
  * This class represents a generic region segment.<br>
@@ -37,8 +35,6 @@ import org.apache.pdfbox.jbig2.util.log.LoggerFactory;
  */
 public class GenericRegion implements Region
 {
-
-    private final Logger log = LoggerFactory.getLogger(GenericRegion.class);
 
     private SubInputStream subInputStream;
     private long dataHeaderOffset;
@@ -135,8 +131,6 @@ public class GenericRegion implements Region
 
         /* Segment data structure */
         computeSegmentDataStructure();
-
-        this.checkInput();
     }
 
     private void readGbAtPixels(final int amountOfGbAt) throws IOException
@@ -158,22 +152,12 @@ public class GenericRegion implements Region
         dataLength = subInputStream.length() - dataHeaderLength;
     }
 
-    private void checkInput() throws InvalidHeaderValueException
-    {
-        if (isMMREncoded)
-        {
-            if (gbTemplate != 0)
-            {
-                log.info("gbTemplate should contain the value 0");
-            }
-        }
-    }
-
     /**
      * The procedure is described in 6.2.5.7, page 17.
      * 
      * @return The decoded {@link Bitmap} of this region.
      */
+    @Override
     public Bitmap getRegionBitmap() throws IOException
     {
         if (null == regionBitmap)
@@ -670,14 +654,11 @@ public class GenericRegion implements Region
     {
         if (gbAtX == null || gbAtY == null)
         {
-            log.info("AT pixels not set");
             return;
         }
 
         if (gbAtX.length != gbAtY.length)
         {
-            log.info("AT pixel inconsistent, amount of x pixels: " + gbAtX.length
-                    + ", amount of y pixels:" + gbAtY.length);
             return;
         }
 
@@ -1046,6 +1027,7 @@ public class GenericRegion implements Region
         this.regionBitmap = null;
     }
 
+    @Override
     public void init(final SegmentHeader header, final SubInputStream sis)
             throws InvalidHeaderValueException, IOException
     {
@@ -1054,6 +1036,7 @@ public class GenericRegion implements Region
         parseHeader();
     }
 
+    @Override
     public RegionSegmentInformation getRegionInfo()
     {
         return regionInfo;
